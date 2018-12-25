@@ -1,0 +1,16 @@
+﻿@model TicTacToeOnline.ViewModels.GamePartialViewModel
+@{
+    ViewData["Title"] = "Game";
+    var started = Model.Started;
+}
+
+<script src="~/js/game.js"></script>
+<div class="d-flex justify-content-center" >
+    <div class="d-flex flex-column">
+        <h2>Game</h2>
+        <div>
+            <partial name="_GameBoard" model="@Model" />
+        </div>
+    </div>
+</div>
+
