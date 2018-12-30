@@ -11,18 +11,30 @@ namespace TicTacToeOnline.Models.TicTacToe
 	private const short PLAYER_ONE = 0;
 	private const short PLAYER_TWO = 1;
 	public GameBoard GameBoard { get; }
-	public Dictionary<ISession, Player> Players { get; }
-	public Symbol CurrentPlayerSymbol { get; }
+	public Dictionary<int, Player> Players { get; }
+	public Symbol CurrentPlayerSymbol { get; set; }
+	public short MarkedSquares { get; set; }
 	public bool GameStarted { get; }
+	public Symbol WinnerSymbol { get; set; }
+	public short OnlinePlayers{ get; set; }
 
-	public GameManager(ISession firstPlayer, ISession secondPlayer)
+	public GameManager(ISession firstPlayer)
 	{
 	    GameBoard = new GameBoard();
-	    Players = new Dictionary<ISession, Player>();
-	    Players[firstPlayer] = new Player(Symbol.X, PLAYER_ONE);
-	    Players[secondPlayer] = new Player(Symbol.O, PLAYER_TWO);
+	    Players = new Dictionary<int, Player>();
+	    Players.Add(BitConverter.ToInt32(firstPlayer.Get("GUID")), new Player(Symbol.X, PLAYER_ONE));
+	    //Players[secondPlayer] = new Player(Symbol.O, PLAYER_TWO);
 	    CurrentPlayerSymbol = randomFirstPlayer(Players.Count);
 	    GameStarted = true;
+	    WinnerSymbol = Symbol.None;
+	    MarkedSquares = 0;
+	    OnlinePlayers++;
+	}
+
+	public void AddSecondPlayer(ISession secondPlayer)
+	{
+	    Players.Add(BitConverter.ToInt32(secondPlayer.Get("GUID")), new Player(Symbol.O, PLAYER_TWO));
+	    OnlinePlayers++;
 	}
 
 	private Symbol randomFirstPlayer(int randMax)
@@ -31,22 +43,35 @@ namespace TicTacToeOnline.Models.TicTacToe
 	}
 
 	// returns true if the player has won
-	public bool Mark(Symbol playerSymbol, int cellRow, int cellCol)
+	public PlayResult Mark(Symbol playerSymbol, int cellRow, int cellCol)
 	{
-	    bool gameOver = false;
+	    PlayResult playResult = PlayResult.None;
 	    if (GameBoard.Board[cellRow, cellCol] != Symbol.X && GameBoard.Board[cellRow, cellCol] != Symbol.O)
 	    {
 		GameBoard.Board[cellRow, cellCol] = playerSymbol;
-		gameOver = checkForCurrentPlayerWin(cellRow, cellCol);
+		MarkedSquares++;
+		playResult = checkForCurrentPlayerWin(cellRow, cellCol);
 		toggleTurn();
 	    }
 
-	    return gameOver;
+	    return playResult;
 	}
 
-	private bool checkForCurrentPlayerWin(int cellRow, int cellCol)
+	private PlayResult checkForCurrentPlayerWin(int cellRow, int cellCol)
 	{
-	    return checkRowWin(cellRow) || checkColWin(cellCol) || checkDiagonalWin(cellRow, cellCol);
+	    PlayResult playResult = PlayResult.None;
+
+	    if (checkRowWin(cellRow) || checkColWin(cellCol) || checkDiagonalWin(cellRow, cellCol))
+	    {
+		playResult = PlayResult.Winner;
+		WinnerSymbol = CurrentPlayerSymbol;
+	    }
+	    else if (MarkedSquares == 9)
+	    {
+		playResult = PlayResult.Tie;
+	    }
+
+	    return playResult;
 	}
 
 	private bool checkDiagonalWin(int cellRow, int cellCol)

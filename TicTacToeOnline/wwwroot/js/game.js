@@ -3,7 +3,7 @@
 $(function () {
     for (var i = 0; i < 9; i++) {
 	var gameCell = document.getElementById(i);
-	gameCell.onclick = markSquare(i);
+	gameCell.onclick = function () { markSquare(i); };
     }
 
     GetPlayerSymbol();
@@ -14,14 +14,17 @@ function GetPlayerSymbol() {
 	type: "POST",
 	url: "/Game/PlayerSymbol",
 	contentType: "application/json;charset=utf-8",
-	success: function (symbol) {
-	    mySymbol = symbol;
+	success: function (data) {
+	    mySymbol = Json.toJson(data);
 	},
-	error: errorFunc
+	error: function (data) {
+	    errorFunc(data);
+	}
     });
 }
 
 function markSquare(squareIndex) {
+    debugger;
     $.ajax({
 	type: "POST",
 	url: "/Game/Mark",
@@ -30,12 +33,15 @@ function markSquare(squareIndex) {
 	},
 	contentType: "application/json; charset=utf-8",
 	dataType: "json",
-	success: TurnUpdate(response),
-	error: errorFunc
+	success: function (data) {
+	    TurnUpdate(data);
+	},
+	error: errorFunc(data)
     });
 }
 
-function TurnUpdate(response) {
+function TurnUpdate(data) {
+    response = Json.toJson(data);
     var isWinner = response.Winner;
     var squareIndexToUpdate = response.LastSquareMarked;
     var squareSymbolToUpdate = response.LastMarkedSymbol;
@@ -75,6 +81,7 @@ function LoseActions() {
 
 }
 
-function errorFunc() {
-    alert('error');
+function errorFunc(errordata) {
+    alert("data: " ,errordata);
+    
 }

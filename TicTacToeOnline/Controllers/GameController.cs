@@ -5,46 +5,41 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TicTacToeOnline.Models.TicTacToe;
+using TicTacToeOnline.Services;
 using TicTacToeOnline.ViewModels;
 
 namespace TicTacToeOnline.Controllers
 {
     public class GameController : Controller
     {
-	private readonly ISet<ISession> waitingPlayers;
-	private readonly Dictionary<ISession, GameManager> playingPlayers;
+	private readonly IPlayersSessionHandler sessionHandler;
+	//private IHttpContextAccessor httpContextAccessor;
 
-	public GameController()
+	public GameController(IPlayersSessionHandler handler)
 	{
-	    waitingPlayers = new HashSet<ISession>();
-	    playingPlayers = new Dictionary<ISession, GameManager>();
+	    //waitingPlayers = new HashSet<ISession>();
+	    //playingPlayers = new Dictionary<ISession, GameManager>();
+	    //  httpContextAccessor = contextAccessor;
+	    sessionHandler = handler;
 	}
 
 	public IActionResult Index()
 	{
-	    if (!playingPlayers.ContainsKey(HttpContext.Session))
-	    {
-
-		waitingPlayers.Add(HttpContext.Session);
-		if (waitingPlayers.Count > 1)
-		{
-		    ISession waitingPlayerSession = waitingPlayers.First(playerSession => playerSession != HttpContext.Session);
-		    addToPlayingPlayers(waitingPlayerSession, HttpContext.Session);
-		}
-	    }
-
+	    sessionHandler.AddNewPlayer(HttpContext.Session);
 	    return RedirectToAction(nameof(ActiveGame));
 	}
 
 	public IActionResult ActiveGame()
 	{
 	    GamePartialViewModel viewModel = new GamePartialViewModel();
+	    Dictionary<int, GameManager> playingPlayers = sessionHandler.GetPlayingPlayers();
+	    int playerGUID = BitConverter.ToInt32(HttpContext.Session.Get("GUID"));
 
-	    if (playingPlayers.ContainsKey(HttpContext.Session))
+	    if (playingPlayers.ContainsKey(playerGUID))
 	    {
-		viewModel.Board = playingPlayers[HttpContext.Session].GameBoard;
-		viewModel.Player = playingPlayers[HttpContext.Session].Players[HttpContext.Session];
-		viewModel.Started = playingPlayers[HttpContext.Session].GameStarted;
+		viewModel.Board = playingPlayers[playerGUID].GameBoard;
+		viewModel.Player = playingPlayers[playerGUID].Players[playerGUID];
+		viewModel.Started = playingPlayers[playerGUID].GameStarted;
 	    }
 	    else
 	    {
@@ -54,29 +49,34 @@ namespace TicTacToeOnline.Controllers
 	    return View(viewModel);
 	}
 
-	private void addToPlayingPlayers(ISession firstPlayer, ISession secondPlayer)
-	{
-	    GameManager newGame = new GameManager(firstPlayer, secondPlayer);
-	    waitingPlayers.Remove(firstPlayer);
-	    waitingPlayers.Remove(secondPlayer);
-	    playingPlayers.Add(firstPlayer, newGame);
-	    playingPlayers.Add(secondPlayer, newGame);
-	}
-
 	public IActionResult PlayerSymbol()
 	{
-	    return Json(playingPlayers[HttpContext.Session].Players[HttpContext.Session].PlayerSymbol);
+	    int playerGUID = BitConverter.ToInt32(HttpContext.Session.Get("GUID"));
+	    return Json(sessionHandler.GetPlayingPlayers()[playerGUID].Players[playerGUID].PlayerSymbol);
 	}
 
-	public IActionResult Mark(int index) 
+	public IActionResult Mark(int index)
 	{
-	    GameManager game = playingPlayers[HttpContext.Session];
+	    int playerGUID= BitConverter.ToInt32(HttpContext.Session.Get("GUID"));
+	    GameManager game = sessionHandler.GetPlayingPlayers()[playerGUID];
+	    Symbol symbol = game.Players[playerGUID].PlayerSymbol;
 
-	    if (game.Players[HttpContext.Session].PlayerSymbol.Equals(game.CurrentPlayerSymbol))
+
+	    if (symbol.Equals(game.CurrentPlayerSymbol))
 	    {
-		game.Mark(game.Players[HttpContext.Session].PlayerSymbol, index / 3, index % 3);
+		game.Mark(symbol, index / 3, index % 3);
+		if (game.WinnerSymbol != Symbol.None)
+		{
+		    sessionHandler.RemovePlayerFromPlayingList(game);
+		}
 	    }
-	    
+
+	    return Json(new GameUpdateViewModel
+	    {
+		LastMarkedSquare = index,
+		LastMarkedSymbol = symbol.ToString(),
+		Winner = game.WinnerSymbol.ToString()
+	    });
 	}
     }
 
