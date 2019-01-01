@@ -1,21 +1,26 @@
 ﻿var mySymbol;
+var currentPlayer;
+var squaresMarked = [];
+var squaresUnmarked = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+var gameStarted = false;
 
 $(function () {
     for (var i = 0; i < 9; i++) {
 	var gameCell = document.getElementById(i);
-	gameCell.onclick = function () { markSquare(i); };
+	gameCell.onclick = function () { markedSqaures(i); };
+	gameCell.disabled = true;
     }
 
-    GetPlayerSymbol();
-})
+    getStartingValues();
+  })
 
-function GetPlayerSymbol() {
+function getStartingValues() {
     $.ajax({
 	type: "POST",
-	url: "/Game/PlayerSymbol",
+	url: "/Game/GetStartingValues",
 	contentType: "application/json;charset=utf-8",
 	success: function (data) {
-	    mySymbol = Json.toJson(data);
+	    setStartingValues(data);
 	},
 	error: function (data) {
 	    errorFunc(data);
@@ -23,7 +28,29 @@ function GetPlayerSymbol() {
     });
 }
 
-function markSquare(squareIndex) {
+function setStartingValues(data) {
+    mySymbol = data.playerSymbol;
+    currentPlayer = data.firstPlayerSymbol;
+    if (currentPlayer === mySymbol) {
+	enableRemainingSquares();
+    }
+    else {
+	disableRemainingSquares();
+    }
+}
+
+function disableRemainingSquares() {
+
+}
+
+function enableRemainingSquares() {
+    squaresMarked.forEach(function (index) {
+	var gameCell = getElementById(index);
+	gameCell.disabled = false;
+    });
+}
+
+function markedSqaures(squareIndex) {
     debugger;
     $.ajax({
 	type: "POST",
@@ -36,12 +63,14 @@ function markSquare(squareIndex) {
 	success: function (data) {
 	    TurnUpdate(data);
 	},
-	error: errorFunc(data)
+	error: function (data) {
+	    errorFunc(data)
+	}
     });
 }
 
 function TurnUpdate(data) {
-    response = Json.toJson(data);
+    response = JSON.parse(data);
     var isWinner = response.Winner;
     var squareIndexToUpdate = response.LastSquareMarked;
     var squareSymbolToUpdate = response.LastMarkedSymbol;
@@ -57,14 +86,16 @@ function TurnUpdate(data) {
 }
 
 function updateBoard(squareIndex, squareSymbol) {
-
     var square = getElementById(squareIndex);
+    squaresMarked.push(squareIndex);
+    var indexToRemove = squaresUnmarked.indexOf(squareIndex);
+    squaresUnmarked.splice(indexToRemove, 1);
     square.disabled = true;
 
     if (squareSymbol === 'X') {
 	square.className = "btn btn-danger btn-game";
     } else {
-	square.className = "btn btn-danger btn-game";
+	square.className = "btn btn-primary btn-game";
     }
 
 }
@@ -82,6 +113,6 @@ function LoseActions() {
 }
 
 function errorFunc(errordata) {
-    alert("data: " ,errordata);
-    
+    alert("data: ", errordata);
+
 }

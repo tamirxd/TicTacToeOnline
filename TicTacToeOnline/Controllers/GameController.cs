@@ -49,15 +49,20 @@ namespace TicTacToeOnline.Controllers
 	    return View(viewModel);
 	}
 
-	public IActionResult PlayerSymbol()
+	public IActionResult GetStartingValues()
 	{
 	    int playerGUID = BitConverter.ToInt32(HttpContext.Session.Get("GUID"));
-	    return Json(sessionHandler.GetPlayingPlayers()[playerGUID].Players[playerGUID].PlayerSymbol);
+
+	    return Json(new StartingValuesViewModel
+	    {
+		PlayerSymbol = sessionHandler.GetPlayingPlayers()[playerGUID].Players[playerGUID].PlayerSymbol.ToString(),
+		FirstPlayerSymbol = sessionHandler.GetPlayingPlayers()[playerGUID].CurrentPlayerSymbol.ToString()
+	    });
 	}
 
 	public IActionResult Mark(int index)
 	{
-	    int playerGUID= BitConverter.ToInt32(HttpContext.Session.Get("GUID"));
+	    int playerGUID = BitConverter.ToInt32(HttpContext.Session.Get("GUID"));
 	    GameManager game = sessionHandler.GetPlayingPlayers()[playerGUID];
 	    Symbol symbol = game.Players[playerGUID].PlayerSymbol;
 

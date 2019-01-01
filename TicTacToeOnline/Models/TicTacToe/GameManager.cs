@@ -14,27 +14,37 @@ namespace TicTacToeOnline.Models.TicTacToe
 	public Dictionary<int, Player> Players { get; }
 	public Symbol CurrentPlayerSymbol { get; set; }
 	public short MarkedSquares { get; set; }
-	public bool GameStarted { get; }
+	public bool GameStarted { get; set; }
 	public Symbol WinnerSymbol { get; set; }
-	public short OnlinePlayers{ get; set; }
 
-	public GameManager(ISession firstPlayer)
+	public GameManager(ISession firstPlayer) : this() // Add waiting player to an existing game
+	{
+	    Players.Add(BitConverter.ToInt32(firstPlayer.Get("GUID")), new Player(Symbol.X, PLAYER_ONE));
+	    //Players[secondPlayer] = new Player(Symbol.O, PLAYER_TWO);
+	}
+
+	public GameManager(int firstGUID, int secondGUID) : this() // Add 2 waiting players to a new game
+	{
+	    Players.Add(firstGUID, new Player(Symbol.X, PLAYER_ONE));
+	    Players.Add(secondGUID, new Player(Symbol.O, PLAYER_TWO));
+	}
+
+	private GameManager()
 	{
 	    GameBoard = new GameBoard();
 	    Players = new Dictionary<int, Player>();
-	    Players.Add(BitConverter.ToInt32(firstPlayer.Get("GUID")), new Player(Symbol.X, PLAYER_ONE));
-	    //Players[secondPlayer] = new Player(Symbol.O, PLAYER_TWO);
-	    CurrentPlayerSymbol = randomFirstPlayer(Players.Count);
 	    GameStarted = true;
 	    WinnerSymbol = Symbol.None;
 	    MarkedSquares = 0;
-	    OnlinePlayers++;
+	    CurrentPlayerSymbol = randomFirstPlayer(Players.Count);
 	}
 
-	public void AddSecondPlayer(ISession secondPlayer)
+	public void AddSecondPlayer(int secondPlayerGUID)
 	{
-	    Players.Add(BitConverter.ToInt32(secondPlayer.Get("GUID")), new Player(Symbol.O, PLAYER_TWO));
-	    OnlinePlayers++;
+	    if (Players.Count < 2)
+	    {
+		Players.Add(secondPlayerGUID, new Player(Symbol.O, PLAYER_TWO));
+	    }
 	}
 
 	private Symbol randomFirstPlayer(int randMax)

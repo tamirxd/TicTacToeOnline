@@ -31,7 +31,15 @@ namespace TicTacToeOnline.Services
 		if (waitingPlayers.Count > 1)
 		{
 		    int waitingPlayerGUID = waitingPlayers.First(guid => guid != playerGUID);
-		    addToExistingGame(waitingPlayerGUID, playingPlayers[playerGUID]);
+
+		    if (!playingPlayers.ContainsKey(waitingPlayerGUID))
+		    {
+			addPlayersToNewGame(waitingPlayerGUID, waitingPlayerGUID);
+		    }
+		    else
+		    {
+			addPlayerToExisitingGame(playerGUID, playingPlayers[waitingPlayerGUID]);
+		    }
 		}
 		else
 		{
@@ -40,10 +48,20 @@ namespace TicTacToeOnline.Services
 	    }
 	}
 
-	private void addToExistingGame(int secondPlayerGUID, GameManager existingGame)
+	private void addPlayerToExisitingGame(int secondPlayerGUID, GameManager exisitngGame)
 	{
-	    playingPlayers.Add(secondPlayerGUID, existingGame);
-	    RemovePlayersFromWaitingList(existingGame);
+	    int firstPlayerGUID = exisitngGame.Players.FirstOrDefault(player => player.Key != secondPlayerGUID).Key;
+	    playingPlayers.Add(secondPlayerGUID, exisitngGame);
+	    exisitngGame.AddSecondPlayer(secondPlayerGUID);
+	    RemovePlayersFromWaitingList(exisitngGame);
+	}
+
+	private void addPlayersToNewGame(int secondPlayerGUID, int firstPlayerGUID)
+	{
+	    GameManager newGame = new GameManager(firstPlayerGUID, secondPlayerGUID);
+	    playingPlayers.Add(firstPlayerGUID, newGame);
+	    playingPlayers.Add(secondPlayerGUID, newGame);
+	    RemovePlayersFromWaitingList(newGame);
 	}
 
 	public GameManager GetGame(int playerGUID)

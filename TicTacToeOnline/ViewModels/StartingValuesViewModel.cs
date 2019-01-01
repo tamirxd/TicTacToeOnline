@@ -6,8 +6,9 @@ using TicTacToeOnline.Models.TicTacToe;
 
 namespace TicTacToeOnline.ViewModels
 {
-    public class SymbolViewModel
+    public class StartingValuesViewModel
     {
-	public Symbol Symbol { get; set; }
+	public string PlayerSymbol { get; set; }
+	public string FirstPlayerSymbol { get; set; }
     }
 }
