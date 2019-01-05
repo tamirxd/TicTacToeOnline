@@ -29,4 +29,3 @@ C:\Users\User\Documents\Visual Studio 2017\Projects\TicTacToeOnline\TicTacToeOnl
 C:\Users\User\Documents\Visual Studio 2017\Projects\TicTacToeOnline\TicTacToeOnline\obj\Debug\netcoreapp2.1\TicTacToeOnline.csproj.CopyComplete
 C:\Users\User\Documents\Visual Studio 2017\Projects\TicTacToeOnline\TicTacToeOnline\obj\Debug\netcoreapp2.1\Razor\Views\Game\ActiveGame.g.cshtml.cs
 C:\Users\User\Documents\Visual Studio 2017\Projects\TicTacToeOnline\TicTacToeOnline\obj\Debug\netcoreapp2.1\Razor\Views\Shared\_GameBoard.g.cshtml.cs
-C:\Users\User\Documents\Visual Studio 2017\Projects\TicTacToeOnline\TicTacToeOnline\obj\Debug\netcoreapp2.1\TicTacToeOnline.csprojAssemblyReference.cache

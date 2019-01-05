@@ -12,10 +12,12 @@ namespace TicTacToeOnline.Models.TicTacToe
 	private const short PLAYER_TWO = 1;
 	public GameBoard GameBoard { get; }
 	public Dictionary<int, Player> Players { get; }
-	public Symbol CurrentPlayerSymbol { get; set; }
-	public short MarkedSquares { get; set; }
-	public bool GameStarted { get; set; }
-	public Symbol WinnerSymbol { get; set; }
+	public Symbol CurrentPlayerSymbol { get; private set; }
+	public short MarkedSquares { get; private set; }
+	public bool GameStarted { get; private set; }
+	public Symbol WinnerSymbol { get; private set; }
+	public int LastMarkedSquare { get; private set; }
+	public Symbol LastMarkedSymbol { get; private set; }
 
 	public GameManager(ISession firstPlayer) : this() // Add waiting player to an existing game
 	{
@@ -37,6 +39,7 @@ namespace TicTacToeOnline.Models.TicTacToe
 	    WinnerSymbol = Symbol.None;
 	    MarkedSquares = 0;
 	    CurrentPlayerSymbol = randomFirstPlayer(Players.Count);
+	    LastMarkedSymbol = Symbol.None;
 	}
 
 	public void AddSecondPlayer(int secondPlayerGUID)
@@ -61,6 +64,8 @@ namespace TicTacToeOnline.Models.TicTacToe
 		GameBoard.Board[cellRow, cellCol] = playerSymbol;
 		MarkedSquares++;
 		playResult = checkForCurrentPlayerWin(cellRow, cellCol);
+		LastMarkedSquare = cellRow * 3 + cellCol;
+		LastMarkedSymbol = CurrentPlayerSymbol;
 		toggleTurn();
 	    }
 

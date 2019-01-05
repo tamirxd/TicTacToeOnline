@@ -13,13 +13,9 @@ namespace TicTacToeOnline.Controllers
     public class GameController : Controller
     {
 	private readonly IPlayersSessionHandler sessionHandler;
-	//private IHttpContextAccessor httpContextAccessor;
 
 	public GameController(IPlayersSessionHandler handler)
 	{
-	    //waitingPlayers = new HashSet<ISession>();
-	    //playingPlayers = new Dictionary<ISession, GameManager>();
-	    //  httpContextAccessor = contextAccessor;
 	    sessionHandler = handler;
 	}
 
@@ -65,8 +61,6 @@ namespace TicTacToeOnline.Controllers
 	    int playerGUID = BitConverter.ToInt32(HttpContext.Session.Get("GUID"));
 	    GameManager game = sessionHandler.GetPlayingPlayers()[playerGUID];
 	    Symbol symbol = game.Players[playerGUID].PlayerSymbol;
-
-
 	    if (symbol.Equals(game.CurrentPlayerSymbol))
 	    {
 		game.Mark(symbol, index / 3, index % 3);
@@ -81,6 +75,17 @@ namespace TicTacToeOnline.Controllers
 		LastMarkedSquare = index,
 		LastMarkedSymbol = symbol.ToString(),
 		Winner = game.WinnerSymbol.ToString()
+	    });
+	}
+
+	public IActionResult Turn()
+	{
+	    GameManager playerGame = sessionHandler.GetGame(BitConverter.ToInt32(HttpContext.Session.Get("GUID")));
+	    return Json(new GameUpdateViewModel
+	    {
+		LastMarkedSquare = playerGame.LastMarkedSquare,
+		LastMarkedSymbol = playerGame.LastMarkedSymbol.ToString(),
+		Winner = playerGame.WinnerSymbol.ToString()
 	    });
 	}
     }
