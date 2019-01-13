@@ -62,7 +62,7 @@ using TicTacToeOnline.Models;
             WriteLiteral("\r\n<div class=\"text-center\">\r\n    ");
             EndContext();
             BeginContext(78, 103, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "5186298530f049ea85de56e9f05c0c5a", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "1f20f5f7a2364d4d9d50200f4f8939d2", async() => {
                 BeginContext(161, 16, true);
                 WriteLiteral("Join a new game!");
                 EndContext();

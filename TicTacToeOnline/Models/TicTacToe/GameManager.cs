@@ -29,13 +29,14 @@ namespace TicTacToeOnline.Models.TicTacToe
 	{
 	    Players.Add(firstGUID, new Player(Symbol.X, PLAYER_ONE));
 	    Players.Add(secondGUID, new Player(Symbol.O, PLAYER_TWO));
+	    GameStarted = true;
 	}
 
 	private GameManager()
 	{
 	    GameBoard = new GameBoard();
 	    Players = new Dictionary<int, Player>();
-	    GameStarted = true;
+	    GameStarted = false;
 	    WinnerSymbol = Symbol.None;
 	    MarkedSquares = 0;
 	    CurrentPlayerSymbol = randomFirstPlayer(Players.Count);
@@ -47,6 +48,7 @@ namespace TicTacToeOnline.Models.TicTacToe
 	    if (Players.Count < 2)
 	    {
 		Players.Add(secondPlayerGUID, new Player(Symbol.O, PLAYER_TWO));
+		GameStarted = true;
 	    }
 	}
 
@@ -55,7 +57,6 @@ namespace TicTacToeOnline.Models.TicTacToe
 	    return (Symbol)new Random().Next(randMax);
 	}
 
-	// returns true if the player has won
 	public PlayResult Mark(Symbol playerSymbol, int cellRow, int cellCol)
 	{
 	    PlayResult playResult = PlayResult.None;
@@ -65,7 +66,7 @@ namespace TicTacToeOnline.Models.TicTacToe
 		MarkedSquares++;
 		playResult = checkForCurrentPlayerWin(cellRow, cellCol);
 		LastMarkedSquare = cellRow * 3 + cellCol;
-		LastMarkedSymbol = CurrentPlayerSymbol;
+		LastMarkedSymbol = playerSymbol;
 		toggleTurn();
 	    }
 
@@ -75,7 +76,6 @@ namespace TicTacToeOnline.Models.TicTacToe
 	private PlayResult checkForCurrentPlayerWin(int cellRow, int cellCol)
 	{
 	    PlayResult playResult = PlayResult.None;
-
 	    if (checkRowWin(cellRow) || checkColWin(cellCol) || checkDiagonalWin(cellRow, cellCol))
 	    {
 		playResult = PlayResult.Winner;
@@ -91,32 +91,48 @@ namespace TicTacToeOnline.Models.TicTacToe
 
 	private bool checkDiagonalWin(int cellRow, int cellCol)
 	{
-	    bool diagonalWin = (GameBoard.Board[1, 1] != CurrentPlayerSymbol) ? true : false;
+	    /** == instead of !=  probably. eter ccondition only if true*/
+	    bool diagonalWin = (GameBoard.Board[1, 1] == CurrentPlayerSymbol) ? true : false;
+	    if (diagonalWin)
+	    {
+		diagonalWin = checkDiagonalWinWithCenter(cellRow, cellCol);
+	    }
+
+	    return diagonalWin;
+	}
+
+	private bool checkDiagonalWinWithCenter(int cellRow, int cellCol)
+	{
+	    bool diagonalWin = true;
 	    if (cellCol == 0)
 	    {
 		if (cellRow == 0)
 		{
 		    diagonalWin = diagonalWin && GameBoard.Board[cellRow, cellCol] == CurrentPlayerSymbol &&
-			GameBoard.Board[GameBoard.BOARD_ROWS, GameBoard.BOARD_COLS] == CurrentPlayerSymbol;
+			GameBoard.Board[GameBoard.BOARD_ROWS - 1, GameBoard.BOARD_COLS - 1] == CurrentPlayerSymbol;
 		}
-		else if (cellRow == GameBoard.BOARD_ROWS)
+		else if (cellRow == GameBoard.BOARD_ROWS - 1)
 		{
 		    diagonalWin = diagonalWin && GameBoard.Board[cellRow, cellCol] == CurrentPlayerSymbol &&
-			GameBoard.Board[0, GameBoard.BOARD_COLS] == CurrentPlayerSymbol;
+			GameBoard.Board[0, GameBoard.BOARD_COLS - 1] == CurrentPlayerSymbol;
 		}
 	    }
-	    else if (cellCol == GameBoard.BOARD_COLS)
+	    else if (cellCol == GameBoard.BOARD_COLS - 1)
 	    {
 		if (cellRow == 0)
 		{
-		    diagonalWin = diagonalWin && GameBoard.Board[cellRow, cellCol] == CurrentPlayerSymbol &&
-					    GameBoard.Board[GameBoard.BOARD_ROWS, 0] == CurrentPlayerSymbol;
+		    diagonalWin = diagonalWin && GameBoard.Board[cellRow , cellCol ] == CurrentPlayerSymbol &&
+					    GameBoard.Board[GameBoard.BOARD_ROWS - 1, 0] == CurrentPlayerSymbol;
 		}
-		else if (cellRow == GameBoard.BOARD_ROWS)
+		else if (cellRow == GameBoard.BOARD_ROWS - 1)
 		{
 		    diagonalWin = diagonalWin && GameBoard.Board[cellRow, cellCol] == CurrentPlayerSymbol &&
 					    GameBoard.Board[0, 0] == CurrentPlayerSymbol;
 		}
+	    }
+	    else
+	    {
+		diagonalWin = false;
 	    }
 
 	    return diagonalWin;

@@ -10,5 +10,6 @@ namespace TicTacToeOnline.ViewModels
     {
 	public string PlayerSymbol { get; set; }
 	public string FirstPlayerSymbol { get; set; }
+	public bool GameStarted { get; set; }
     }
 }
