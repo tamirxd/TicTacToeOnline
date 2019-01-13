@@ -14,7 +14,19 @@ namespace TicTacToeOnline.Models.TicTacToe
 
 	public GameBoard()
 	{
-	    Board = new Symbol[BOARD_ROWS , BOARD_COLS];
+	    Board = new Symbol[BOARD_ROWS, BOARD_COLS];
+	    initializeBoard();
+	}
+
+	private void initializeBoard()
+	{
+	    for (int i = 0; i < BOARD_ROWS; i++)
+	    {
+		for (int j = 0; j < BOARD_COLS; j++)
+		{
+		    Board[i, j] = Symbol.None;
+		}
+	    }
 	}
     }
 }

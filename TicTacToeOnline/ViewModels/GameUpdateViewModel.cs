@@ -10,5 +10,6 @@ namespace TicTacToeOnline.ViewModels
 	public int LastMarkedSquare{ get; set; }
 	public string LastMarkedSymbol { get; set; }
 	public string Winner { get; set; }
+	public string CurrentPlayer { get; set; }
     }
 }
