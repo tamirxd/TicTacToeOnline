@@ -1,80 +1,273 @@
 ﻿var mySymbol;
+var currentPlayer;
+var squaresMarked = [];
+var squaresUnmarked = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+var gameStarted = false;
+var gameStartedInterval;
+var checkTurnInterval;
+var isBoardUpdated = false;
 
 $(function () {
-    for (var i = 0; i < 9; i++) {
+    var i;
+    for (i = 0; i < 9; i++) {
 	var gameCell = document.getElementById(i);
-	gameCell.onclick = markSquare(i);
+	gameCell.onclick = function () { return MarkSquare(this.id); };
+	gameCell.disabled = true;
     }
 
-    GetPlayerSymbol();
+    getStartingValues();
+    gameStartedInterval = setInterval(checkIfGameStarted, 2000);
 })
 
-function GetPlayerSymbol() {
+function getStartingValues() {
     $.ajax({
 	type: "POST",
-	url: "/Game/PlayerSymbol",
+	url: "/Game/GetStartingValues",
 	contentType: "application/json;charset=utf-8",
-	success: function (symbol) {
-	    mySymbol = symbol;
+	success: function (data) {
+	    setStartingValues(data);
 	},
-	error: errorFunc
+	error: function (data) {
+	    errorFunc(data);
+	}
     });
 }
 
-function markSquare(squareIndex) {
+function setStartingValues(data) {
+    mySymbol = data.playerSymbol;
+    currentPlayer = data.firstPlayerSymbol;
+    disableRemainingSquares();
+}
+
+function toggleSquares() {
+    if (currentPlayer === mySymbol) {
+	enableRemainingSquares();
+    }
+    else {
+	disableRemainingSquares();
+    }
+}
+
+function disableRemainingSquares() {
+    squaresUnmarked.forEach(function (index) {
+	var gameCell = document.getElementById(index);
+	if (gameCell != undefined) {
+	    gameCell.disabled = true;
+	}
+    });
+}
+
+function enableRemainingSquares() {
+    squaresUnmarked.forEach(function (index) {
+	var gameCell = document.getElementById(index);
+	if (gameCell != undefined) {
+	    gameCell.disabled = false;
+	}
+    });
+}
+
+function MarkSquare(squareIndex) {
     $.ajax({
-	type: "POST",
+	type: "post",
+	dataType: "json",
 	url: "/Game/Mark",
 	data: {
-	    index: squareIndex
+	    index: squareIndex,
 	},
-	contentType: "application/json; charset=utf-8",
-	dataType: "json",
-	success: TurnUpdate(response),
-	error: errorFunc
+	success: function (data) {
+	    postMarkActions(data);
+	},
+	error: function (data) {
+	    errorFunc(data)
+	}
     });
 }
 
-function TurnUpdate(response) {
-    var isWinner = response.Winner;
-    var squareIndexToUpdate = response.LastSquareMarked;
-    var squareSymbolToUpdate = response.LastMarkedSymbol;
+function postMarkActions(data) {
+    TurnUpdate(data);
+    isBoardUpdated = false;
+    disableRemainingSquares();
+    if (data.winner === "None") {
+	checkTurnInterval = setInterval(function () { checkTurn(); }, 2000);
+    }
+}
+
+function TurnUpdate(data) {
+    var isWinner = data.winner;
+    var squareIndexToUpdate = data.lastMarkedSquare;
+    var squareSymbolToUpdate = data.lastMarkedSymbol;
     updateBoard(squareIndexToUpdate, squareSymbolToUpdate);
 
-    if (isWinner === "Winner") {
-	WinningActions();
+    if (checkForEndGame(isWinner)) {
+	endgameActions(isWinner);
+    } else {
+	togglePlayers(data.lastMarkedSymbol);
+    }
+}
+
+function checkForEndGame(isWinner) {
+    if (isWinner != "None") {
+	return true;
+    }
+    return false;
+}
+
+function endgameActions(isWinner) {
+    if (isWinner === mySymbol) {
+	winnerActions();
     } else if (isWinner === "Tie") {
 	TieActions();
-    } else if (isWinner == "Loser") {
-	LoseActions();
+    } else {
+	loserActions();
     }
 }
 
 function updateBoard(squareIndex, squareSymbol) {
-
-    var square = getElementById(squareIndex);
+    var square = document.getElementById(squareIndex);
+    squaresMarked.push(squareIndex);
+    var indexToRemove = squaresUnmarked.indexOf(squareIndex);
+    squaresUnmarked[indexToRemove] = -1;
     square.disabled = true;
 
     if (squareSymbol === 'X') {
 	square.className = "btn btn-danger btn-game";
     } else {
-	square.className = "btn btn-danger btn-game";
+	square.className = "btn btn-primary btn-game";
     }
-
 }
 
-function WinningActions() {
-
+function WinningActions(winnerSymbol) {
+    disableRemainingSquares();
+    if (winnerSymbol === mySymbol) {
+	winnerActions();
+    } else {
+	loserActions();
+    }
 }
 
 function TieActions() {
-
+    endgame("Tie");
 }
 
-function LoseActions() {
-
+function winnerActions() {
+    endgame("Win");
 }
 
-function errorFunc() {
-    alert('error');
+function loserActions() {
+    endgame("Lose");
+}
+
+function endgame(endReason) {
+    disableRemainingSquares();
+    endgameMessage(endReason);
+    redirectToHomepage()
+}
+
+function redirectToHomepage() {
+    setTimeout(function () {
+	window.location.href = "../..";
+    }, 7000);
+}
+
+function endgameMessage(type) {
+    if (type === "Win") {
+	blinkMessage("Congrats! You are the winner! FeelsGoodMan");
+    } else if (type === "Lose") {
+	blinkMessage("You lost! FeelsBadMan");
+    } else {
+	blinkMessage("An amazing tie! FeelsWierdMan");
+    }
+}
+
+
+function blinkMessage(text) {
+    $(".blinking").innerHTML = text;
+    function blinker() {
+	$('.blinking').fadeOut(500);
+	$('.blinking').fadeIn(500);
+    }
+
+    setInterval(blinker, 1000);
+}
+
+function adjustEndgameDiv() {
+    var windowWidth = $(window).width();
+    var windowHeight = $(window).height();
+    var endgameDiv = document.getElementById("endgameText");
+    var divW = $(endgameDiv).width();
+    var divH = $(endgameDiv).height();
+
+    endgameDiv.style.position = "absolute";
+    endgameDiv.style.top = (windowHeight / 2) - (divH / 2) + "px";
+    endgameDiv.style.left = (windowWidth / 2) - (divW / 2) + "px";
+}
+
+function errorFunc(errordata) {
+    alert("data: ", errordata);
+}
+
+function checkTurn() {
+    $.ajax({
+	type: "POST",
+	url: "/Game/Turn",
+	contentType: "application/json; charset=utf-8",
+	dataType: "json",
+	success: function (data) {
+	    checkForNextTurn(data);
+	},
+	error: function (data) {
+	    errorFunc(data)
+	}
+    });
+}
+
+function checkForNextTurn(data) {
+    if (data.lastMarkedSymbol !== "None" && !isBoardUpdated && data.lastMarkedSymbol !== mySymbol) {
+	updateBoard(data.lastMarkedSquare, data.lastMarkedSymbol);
+	enableRemainingSquares();
+	clearInterval(checkTurnInterval);
+	isBoardUpdated = true;
+	togglePlayers(data.lastMarkedSymbol);
+    }
+
+    if (checkForEndGame(data.winner)) {
+	disableRemainingSquares();
+	endgameActions(data.winner);
+    }
+}
+
+function togglePlayers(symbol) {
+    if (symbol !== "None") {
+	if (symbol === "X") {
+	    currentPlayer = "O";
+	} else {
+	    currentPlayer = "X";
+	}
+    }
+}
+
+function checkIfGameStarted() {
+    $.ajax({
+	type: "POST",
+	url: "/Game/GameStarted",
+	contentType: "application/json; charset=utf-8",
+	dataType: "json",
+	success: function (data) {
+	    updateStartValue(data);
+	},
+	error: function (data) {
+	    errorFunc(data)
+	}
+    });
+}
+
+function updateStartValue(data) {
+    if (data.gameStarted) {
+	clearInterval(gameStartedInterval);
+	if (currentPlayer !== mySymbol) {
+	    checkTurnInterval = setInterval(checkTurn, 2000);
+	} else {
+	    enableRemainingSquares();
+	}
+    }
 }

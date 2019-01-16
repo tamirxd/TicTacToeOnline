@@ -11,18 +11,49 @@ namespace TicTacToeOnline.Models.TicTacToe
 	private const short PLAYER_ONE = 0;
 	private const short PLAYER_TWO = 1;
 	public GameBoard GameBoard { get; }
-	public Dictionary<ISession, Player> Players { get; }
-	public Symbol CurrentPlayerSymbol { get; }
-	public bool GameStarted { get; }
+	public Dictionary<int, Player> Players { get; }
+	public Symbol CurrentPlayerSymbol { get; private set; }
+	public short MarkedSquares { get; private set; }
+	public bool GameStarted { get; private set; }
+	public Symbol WinnerSymbol { get; private set; }
+	public int LastMarkedSquare { get; private set; }
+	public Symbol LastMarkedSymbol { get; private set; }
+	public WinningLine WinningLine { get; private set; }
+	public bool IsUpdatedOnDb { get; set; }
 
-	public GameManager(ISession firstPlayer, ISession secondPlayer)
+	public GameManager(ISession firstPlayer) : this() // Add waiting player to an existing game
+	{
+	    Players.Add(BitConverter.ToInt32(firstPlayer.Get("GUID")), new Player(Symbol.X, PLAYER_ONE));
+	    //Players[secondPlayer] = new Player(Symbol.O, PLAYER_TWO);
+	}
+
+	public GameManager(int firstGUID, int secondGUID) : this() // Add 2 waiting players to a new game
+	{
+	    Players.Add(firstGUID, new Player(Symbol.X, PLAYER_ONE));
+	    Players.Add(secondGUID, new Player(Symbol.O, PLAYER_TWO));
+	    GameStarted = true;
+	}
+
+	private GameManager()
 	{
 	    GameBoard = new GameBoard();
-	    Players = new Dictionary<ISession, Player>();
-	    Players[firstPlayer] = new Player(Symbol.X, PLAYER_ONE);
-	    Players[secondPlayer] = new Player(Symbol.O, PLAYER_TWO);
-	    CurrentPlayerSymbol = randomFirstPlayer(Players.Count);
-	    GameStarted = true;
+	    Players = new Dictionary<int, Player>();
+	    GameStarted = false;
+	    WinnerSymbol = Symbol.None;
+	    MarkedSquares = 0;
+	    CurrentPlayerSymbol = randomFirstPlayer(2);
+	    LastMarkedSymbol = Symbol.None;
+	    WinningLine = WinningLine.None;
+	    IsUpdatedOnDb = false;
+	}
+
+	public void AddSecondPlayer(int secondPlayerGUID)
+	{
+	    if (Players.Count < 2)
+	    {
+		Players.Add(secondPlayerGUID, new Player(Symbol.O, PLAYER_TWO));
+		GameStarted = true;
+	    }
 	}
 
 	private Symbol randomFirstPlayer(int randMax)
@@ -30,53 +61,87 @@ namespace TicTacToeOnline.Models.TicTacToe
 	    return (Symbol)new Random().Next(randMax);
 	}
 
-	// returns true if the player has won
-	public bool Mark(Symbol playerSymbol, int cellRow, int cellCol)
+	public PlayResult Mark(Symbol playerSymbol, int cellRow, int cellCol)
 	{
-	    bool gameOver = false;
+	    PlayResult playResult = PlayResult.None;
 	    if (GameBoard.Board[cellRow, cellCol] != Symbol.X && GameBoard.Board[cellRow, cellCol] != Symbol.O)
 	    {
 		GameBoard.Board[cellRow, cellCol] = playerSymbol;
-		gameOver = checkForCurrentPlayerWin(cellRow, cellCol);
+		MarkedSquares++;
+		playResult = checkForCurrentPlayerWin(cellRow, cellCol);
+		LastMarkedSquare = cellRow * 3 + cellCol;
+		LastMarkedSymbol = playerSymbol;
 		toggleTurn();
 	    }
 
-	    return gameOver;
+	    return playResult;
 	}
 
-	private bool checkForCurrentPlayerWin(int cellRow, int cellCol)
+	private PlayResult checkForCurrentPlayerWin(int cellRow, int cellCol)
 	{
-	    return checkRowWin(cellRow) || checkColWin(cellCol) || checkDiagonalWin(cellRow, cellCol);
+	    PlayResult playResult = PlayResult.None;
+	    if (checkRowWin(cellRow) || checkColWin(cellCol) || checkDiagonalWin(cellRow, cellCol))
+	    {
+		playResult = PlayResult.Winner;
+		WinnerSymbol = CurrentPlayerSymbol;
+	    }
+	    else if (MarkedSquares == 9)
+	    {
+		playResult = PlayResult.Tie;
+	    }
+
+	    return playResult;
 	}
 
 	private bool checkDiagonalWin(int cellRow, int cellCol)
 	{
-	    bool diagonalWin = (GameBoard.Board[1, 1] != CurrentPlayerSymbol) ? true : false;
+	    /** == instead of !=  probably. eter ccondition only if true*/
+	    bool diagonalWin = (GameBoard.Board[1, 1] == CurrentPlayerSymbol) ? true : false;
+	    if (diagonalWin)
+	    {
+		diagonalWin = checkDiagonalWinWithCenter(cellRow, cellCol);
+	    }
+
+	    if (diagonalWin)
+	    {
+		WinningLine = WinningLine.Diagonal;
+	    }
+
+	    return diagonalWin;
+	}
+
+	private bool checkDiagonalWinWithCenter(int cellRow, int cellCol)
+	{
+	    bool diagonalWin = true;
 	    if (cellCol == 0)
 	    {
 		if (cellRow == 0)
 		{
 		    diagonalWin = diagonalWin && GameBoard.Board[cellRow, cellCol] == CurrentPlayerSymbol &&
-			GameBoard.Board[GameBoard.BOARD_ROWS, GameBoard.BOARD_COLS] == CurrentPlayerSymbol;
+			GameBoard.Board[GameBoard.BOARD_ROWS - 1, GameBoard.BOARD_COLS - 1] == CurrentPlayerSymbol;
 		}
-		else if (cellRow == GameBoard.BOARD_ROWS)
+		else if (cellRow == GameBoard.BOARD_ROWS - 1)
 		{
 		    diagonalWin = diagonalWin && GameBoard.Board[cellRow, cellCol] == CurrentPlayerSymbol &&
-			GameBoard.Board[0, GameBoard.BOARD_COLS] == CurrentPlayerSymbol;
+			GameBoard.Board[0, GameBoard.BOARD_COLS - 1] == CurrentPlayerSymbol;
 		}
 	    }
-	    else if (cellCol == GameBoard.BOARD_COLS)
+	    else if (cellCol == GameBoard.BOARD_COLS - 1)
 	    {
 		if (cellRow == 0)
 		{
-		    diagonalWin = diagonalWin && GameBoard.Board[cellRow, cellCol] == CurrentPlayerSymbol &&
-					    GameBoard.Board[GameBoard.BOARD_ROWS, 0] == CurrentPlayerSymbol;
+		    diagonalWin = diagonalWin && GameBoard.Board[cellRow , cellCol ] == CurrentPlayerSymbol &&
+					    GameBoard.Board[GameBoard.BOARD_ROWS - 1, 0] == CurrentPlayerSymbol;
 		}
-		else if (cellRow == GameBoard.BOARD_ROWS)
+		else if (cellRow == GameBoard.BOARD_ROWS - 1)
 		{
 		    diagonalWin = diagonalWin && GameBoard.Board[cellRow, cellCol] == CurrentPlayerSymbol &&
 					    GameBoard.Board[0, 0] == CurrentPlayerSymbol;
 		}
+	    }
+	    else
+	    {
+		diagonalWin = false;
 	    }
 
 	    return diagonalWin;
@@ -89,6 +154,11 @@ namespace TicTacToeOnline.Models.TicTacToe
 	    {
 		rowWin = rowWin && GameBoard.Board[cellRow, i] == CurrentPlayerSymbol;
 	    }
+
+	    if (rowWin)
+	    {
+		WinningLine = WinningLine.Row;
+	    }
 	    return rowWin;
 	}
 
@@ -98,6 +168,11 @@ namespace TicTacToeOnline.Models.TicTacToe
 	    for (int i = 0; i < GameBoard.BOARD_COLS; i++)
 	    {
 		colWin = colWin && GameBoard.Board[i, cellCol] == CurrentPlayerSymbol;
+	    }
+
+	    if (colWin)
+	    {
+		WinningLine = WinningLine.Column;
 	    }
 
 	    return colWin;
@@ -113,6 +188,27 @@ namespace TicTacToeOnline.Models.TicTacToe
 	    {
 		CurrentPlayerSymbol = Symbol.O;
 	    }
+	}
+
+	public GameStatics GetGameStatics()
+	{
+	    if (WinnerSymbol != Symbol.None && !IsUpdatedOnDb)
+	    {
+		IsUpdatedOnDb = true;
+		GameStatics statics = new GameStatics();
+		statics.Moves = MarkedSquares;
+		statics.WinningLine = WinningLine.ToString();
+		statics.WinnerSymbol = WinnerSymbol.ToString();
+		//return new GameStatics
+		//{
+		//    Moves = MarkedSquares,
+		//    WinningLine = WinningLine.ToString(),
+		//    WinnerSymbol = WinnerSymbol.ToString()
+		//};
+		return statics;
+	    }
+
+	    return null;
 	}
     }
 }

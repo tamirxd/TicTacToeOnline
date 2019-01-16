@@ -14,6 +14,7 @@ namespace TicTacToeOnline.Controllers
 	[Route("~/")]
 	public IActionResult Index()
 	{
+	    HttpContext.Session.Set("GUID",BitConverter.GetBytes(HttpContext.Session.GetHashCode()));
 	    return View();
 	}
 

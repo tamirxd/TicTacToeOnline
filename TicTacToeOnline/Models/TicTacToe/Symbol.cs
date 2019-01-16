@@ -1,10 +1,10 @@
 ﻿namespace TicTacToeOnline.Models.TicTacToe
 {
-    [System.ComponentModel.DefaultValue(NONE)]
+    [System.ComponentModel.DefaultValue(None)]
     public enum Symbol
     {
 	X,
 	O,
-	NONE
+	None
     }
 }

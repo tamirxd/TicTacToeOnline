@@ -1,50 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using TicTacToeOnline.Models.TicTacToe;
+using TicTacToeOnline.Services;
 using TicTacToeOnline.ViewModels;
 
 namespace TicTacToeOnline.Controllers
 {
     public class GameController : Controller
     {
-	private readonly ISet<ISession> waitingPlayers;
-	private readonly Dictionary<ISession, GameManager> playingPlayers;
+	private readonly IGameStatics sqlContext;
+	private readonly IPlayersSessionHandler sessionHandler;
 
-	public GameController()
+	public GameController(IPlayersSessionHandler handler, IGameStatics sqlStatics)
 	{
-	    waitingPlayers = new HashSet<ISession>();
-	    playingPlayers = new Dictionary<ISession, GameManager>();
+	    sqlContext = sqlStatics;
+	    sessionHandler = handler;
 	}
 
 	public IActionResult Index()
 	{
-	    if (!playingPlayers.ContainsKey(HttpContext.Session))
-	    {
-
-		waitingPlayers.Add(HttpContext.Session);
-		if (waitingPlayers.Count > 1)
-		{
-		    ISession waitingPlayerSession = waitingPlayers.First(playerSession => playerSession != HttpContext.Session);
-		    addToPlayingPlayers(waitingPlayerSession, HttpContext.Session);
-		}
-	    }
-
+	    sessionHandler.AddNewPlayer(HttpContext.Session);
 	    return RedirectToAction(nameof(ActiveGame));
 	}
 
 	public IActionResult ActiveGame()
 	{
 	    GamePartialViewModel viewModel = new GamePartialViewModel();
+	    Dictionary<int, GameManager> playingPlayers = sessionHandler.GetPlayingPlayers();
+	    int playerGUID = BitConverter.ToInt32(HttpContext.Session.Get("GUID"));
 
-	    if (playingPlayers.ContainsKey(HttpContext.Session))
+	    if (playingPlayers.ContainsKey(playerGUID))
 	    {
-		viewModel.Board = playingPlayers[HttpContext.Session].GameBoard;
-		viewModel.Player = playingPlayers[HttpContext.Session].Players[HttpContext.Session];
-		viewModel.Started = playingPlayers[HttpContext.Session].GameStarted;
+		viewModel.Board = playingPlayers[playerGUID].GameBoard;
+		viewModel.Player = playingPlayers[playerGUID].Players[playerGUID];
+		viewModel.Started = playingPlayers[playerGUID].GameStarted;
 	    }
 	    else
 	    {
@@ -54,30 +47,87 @@ namespace TicTacToeOnline.Controllers
 	    return View(viewModel);
 	}
 
-	private void addToPlayingPlayers(ISession firstPlayer, ISession secondPlayer)
+	public IActionResult GetStartingValues()
 	{
-	    GameManager newGame = new GameManager(firstPlayer, secondPlayer);
-	    waitingPlayers.Remove(firstPlayer);
-	    waitingPlayers.Remove(secondPlayer);
-	    playingPlayers.Add(firstPlayer, newGame);
-	    playingPlayers.Add(secondPlayer, newGame);
-	}
+	    int playerGUID = BitConverter.ToInt32(HttpContext.Session.Get("GUID"));
 
-	public IActionResult PlayerSymbol()
-	{
-	    return Json(playingPlayers[HttpContext.Session].Players[HttpContext.Session].PlayerSymbol);
-	}
-
-	public IActionResult Mark(int index) 
-	{
-	    GameManager game = playingPlayers[HttpContext.Session];
-
-	    if (game.Players[HttpContext.Session].PlayerSymbol.Equals(game.CurrentPlayerSymbol))
+	    return Json(new StartingValuesViewModel
 	    {
-		game.Mark(game.Players[HttpContext.Session].PlayerSymbol, index / 3, index % 3);
+		PlayerSymbol = sessionHandler.GetPlayingPlayers()[playerGUID].Players[playerGUID].PlayerSymbol.ToString(),
+		FirstPlayerSymbol = sessionHandler.GetPlayingPlayers()[playerGUID].CurrentPlayerSymbol.ToString(),
+		GameStarted = sessionHandler.GetGame(playerGUID).GameStarted
+	    });
+	}
+
+	[HttpPost]
+	public IActionResult Mark(int index)
+	{
+	    int playerGUID = BitConverter.ToInt32(HttpContext.Session.Get("GUID"));
+	    GameManager game = sessionHandler.GetPlayingPlayers()[playerGUID];
+	    Symbol symbol = game.Players[playerGUID].PlayerSymbol;
+	    if (symbol.Equals(game.CurrentPlayerSymbol))
+	    {
+		game.Mark(symbol, index / 3, index % 3);
 	    }
-	    
+	    else
+	    {
+		Response.StatusCode = StatusCodes.Status401Unauthorized;
+	    }
+
+	    return Json(new GameUpdateViewModel
+	    {
+		LastMarkedSquare = index,
+		LastMarkedSymbol = symbol.ToString(),
+		Winner = game.WinnerSymbol.ToString()
+	    });
+	}
+
+	public IActionResult Turn()
+	{
+	    GameManager playerGame = sessionHandler.GetGame(BitConverter.ToInt32(HttpContext.Session.Get("GUID")));
+	    if (playerGame == null)
+	    {
+		Response.StatusCode = StatusCodes.Status400BadRequest;
+		return Json(new object());
+	    }
+	    JsonResult json = Json(new GameUpdateViewModel
+	    {
+		LastMarkedSquare = playerGame.LastMarkedSquare,
+		LastMarkedSymbol = playerGame.LastMarkedSymbol.ToString(),
+		Winner = playerGame.WinnerSymbol.ToString(),
+		CurrentPlayer = playerGame.CurrentPlayerSymbol.ToString()
+	    });
+
+
+	    if (playerGame.WinnerSymbol != Symbol.None && playerGame.WinnerSymbol != playerGame.Players[BitConverter.ToInt32(HttpContext.Session.Get("GUID"))].PlayerSymbol)
+	    {
+		saveGameStaticsAsync(playerGame);
+		sessionHandler.RemoveFromPlayingListAndUpdateStatics(playerGame);
+	    }
+
+	    return json;
+	}
+
+	public IActionResult GameStarted()
+	{
+	    int playerGUID = BitConverter.ToInt32(HttpContext.Session.Get("GUID"));
+	    if (sessionHandler.GetGame(playerGUID) != null)
+	    {
+		return Json(new { sessionHandler.GetGame(playerGUID).GameStarted });
+	    }
+	    else
+	    {
+		return Json(false);
+	    }
+	}
+
+	private void saveGameStaticsAsync(GameManager game)
+	{
+	    if (!game.IsUpdatedOnDb)
+	    {
+		sqlContext.Add(game.GetGameStatics());
+		sqlContext.SaveAsync();
+	    }
 	}
     }
-
 }
