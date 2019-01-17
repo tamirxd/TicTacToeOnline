@@ -1,0 +1,29 @@
+[33mcommit 47832114ec126cecc4720ea5fd952f75f1110797[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/sqlserver-db[m[33m, [m[1;32msqlserver-db[m[33m)[m
+Author: Tamir Michaeli <michaelitamir@gmail.com>
+Date:   Thu Jan 17 16:48:15 2019 +0200
+
+    statics page
+
+[33mcommit f1e4485a8444778e15b78f1dfe89cbca56c53246[m
+Author: Tamir Michaeli <michaelitamir@gmail.com>
+Date:   Thu Jan 17 15:18:23 2019 +0200
+
+    statics db, statics page, tie bug, diagonal win bug
+
+[33mcommit 6a6183beab2b5eeb01375b6b6e0eb843d739a065[m
+Author: Tamir Michaeli <michaelitamir@gmail.com>
+Date:   Wed Jan 16 16:00:22 2019 +0200
+
+    basic statics update
+
+[33mcommit 820922280a744c9d061fcc7ecdbe673228c3121f[m
+Author: Tamir Michaeli <michaelitamir@gmail.com>
+Date:   Sun Jan 13 16:28:27 2019 +0200
+
+    update db init
+
+[33mcommit 779221652584fe5f1aee0a269c397adc8593acc8[m
+Author: Tamir Michaeli <michaelitamir@gmail.com>
+Date:   Tue Dec 25 11:19:17 2018 +0200
+
+    First Commit
