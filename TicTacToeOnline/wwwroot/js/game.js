@@ -179,6 +179,14 @@ function endgameMessage(type) {
     }
 }
 
+//function blinkMessage(text) {
+//	adjustEndgameDiv();
+//	var blinkText = $(".blinking");
+//	$(".blinking").textContent = text;
+//	setInterval(function () {
+//	    blinkText.toggleClass("blink");
+//	}, 1000);
+//}
 
 function blinkMessage(text) {
     $(".blinking").innerHTML = text;
@@ -213,6 +221,7 @@ function checkTurn() {
 	contentType: "application/json; charset=utf-8",
 	dataType: "json",
 	success: function (data) {
+	    debugger;
 	    checkForNextTurn(data);
 	},
 	error: function (data) {
@@ -244,6 +253,10 @@ function togglePlayers(symbol) {
 	    currentPlayer = "X";
 	}
     }
+
+    //   if (currentPlayer === mySymbol) {
+    //clearInterval(checkTurnInterval);
+    //   }
 }
 
 function checkIfGameStarted() {
@@ -271,3 +284,5 @@ function updateStartValue(data) {
 	}
     }
 }
+
+/* לשים טקטסט מתחת לכל ה DIV*/

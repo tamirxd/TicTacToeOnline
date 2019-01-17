@@ -5,7 +5,6 @@
     {
 	X,
 	O,
-	None,
-	Tie,
+	None
     }
 }

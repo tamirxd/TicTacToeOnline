@@ -12,12 +12,10 @@ namespace TicTacToeOnline.Controllers
 {
     public class GameController : Controller
     {
-	private readonly IGameStatics sqlContext;
 	private readonly IPlayersSessionHandler sessionHandler;
 
-	public GameController(IPlayersSessionHandler handler, IGameStatics sqlStatics)
+	public GameController(IPlayersSessionHandler handler)
 	{
-	    sqlContext = sqlStatics;
 	    sessionHandler = handler;
 	}
 
@@ -68,6 +66,10 @@ namespace TicTacToeOnline.Controllers
 	    if (symbol.Equals(game.CurrentPlayerSymbol))
 	    {
 		game.Mark(symbol, index / 3, index % 3);
+		//if (game.WinnerSymbol != Symbol.None)
+		//{
+		//    sessionHandler.RemovePlayerFromPlayingList(game);
+		//}
 	    }
 	    else
 	    {
@@ -101,8 +103,7 @@ namespace TicTacToeOnline.Controllers
 
 	    if (playerGame.WinnerSymbol != Symbol.None && playerGame.WinnerSymbol != playerGame.Players[BitConverter.ToInt32(HttpContext.Session.Get("GUID"))].PlayerSymbol)
 	    {
-		saveGameStaticsAsync(playerGame);
-		sessionHandler.RemoveFromPlayingListAndUpdateStatics(playerGame);
+		sessionHandler.RemovePlayerFromPlayingList(playerGame);
 	    }
 
 	    return json;
@@ -118,15 +119,6 @@ namespace TicTacToeOnline.Controllers
 	    else
 	    {
 		return Json(false);
-	    }
-	}
-
-	private void saveGameStaticsAsync(GameManager game)
-	{
-	    if (!game.IsUpdatedOnDb)
-	    {
-		sqlContext.Add(game.GetGameStatics());
-		sqlContext.SaveAsync();
 	    }
 	}
     }

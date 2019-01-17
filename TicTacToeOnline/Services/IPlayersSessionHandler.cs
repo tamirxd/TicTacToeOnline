@@ -12,7 +12,7 @@ namespace TicTacToeOnline.Services
 	GameManager GetGame(int playerGUID);
 	void AddNewPlayer(ISession newPlayer);
 	void RemovePlayersFromWaitingList(GameManager existingGame);
-	void RemoveFromPlayingListAndUpdateStatics(GameManager gameManager);
+	void RemovePlayerFromPlayingList(GameManager gameManager);
 	ISet<int> GetWaitingPlayers();
 	Dictionary<int, GameManager> GetPlayingPlayers();
     }

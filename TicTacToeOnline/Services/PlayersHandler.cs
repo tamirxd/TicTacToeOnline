@@ -73,7 +73,7 @@ namespace TicTacToeOnline.Services
 	    return null;
 	}
 
-	public void RemoveFromPlayingListAndUpdateStatics(GameManager playersGame)
+	public void RemovePlayerFromPlayingList(GameManager playersGame)
 	{
 	    foreach (var item in playingPlayers.Where(pair => pair.Value == playersGame).ToList())
 	    {

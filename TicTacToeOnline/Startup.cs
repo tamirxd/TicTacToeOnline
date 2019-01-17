@@ -2,10 +2,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using TicTacToeOnline.Data;
 using TicTacToeOnline.Services;
 
 namespace TicTacToeOnline
@@ -27,6 +25,7 @@ namespace TicTacToeOnline
 	    services.AddSingleton<IPlayersSessionHandler, PlayersHandler>();
 	    services.Configure<CookiePolicyOptions>(options =>
 	    {
+		// This lambda determines whether user consent for non-essential cookies is needed for a given request.
 		options.CheckConsentNeeded = context => false;
 		options.MinimumSameSitePolicy = SameSiteMode.None;
 	    });
@@ -37,8 +36,10 @@ namespace TicTacToeOnline
 		options.IdleTimeout = TimeSpan.FromMinutes(25);
 		options.Cookie.HttpOnly = true;
 	    });
+	    // services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+	    // services.AddHttpContextAccessor();
 	    services.AddMvc();
-
+	    services.AddSingleton<IPlayersSessionHandler, PlayersHandler>();
 	}
 
 	// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
