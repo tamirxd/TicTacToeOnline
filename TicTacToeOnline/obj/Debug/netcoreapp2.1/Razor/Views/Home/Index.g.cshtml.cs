@@ -64,7 +64,7 @@ using TicTacToeOnline.Models;
             WriteLiteral("\r\n<div class=\"text-center\">\r\n    <h1 class=\"font-italic\" >Tic Tac Toe.. Online!</h1>\r\n    ");
             EndContext();
             BeginContext(135, 103, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "473ec4344e92499fb3722b0acb83e6ae", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "024eedc74ae9412fa458f55df1221eee", async() => {
                 BeginContext(218, 16, true);
                 WriteLiteral("Join a new game!");
                 EndContext();
@@ -89,7 +89,7 @@ using TicTacToeOnline.Models;
             WriteLiteral("\r\n    <br />\r\n    ");
             EndContext();
             BeginContext(256, 125, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "e0ec47f7636249a3a28f557c2dc90094", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "0b713b78d39c4316bacb53997e5b2e2e", async() => {
                 BeginContext(359, 18, true);
                 WriteLiteral("View Games Statics");
                 EndContext();

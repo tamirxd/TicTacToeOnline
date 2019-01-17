@@ -13,6 +13,7 @@
 <h2>Games Statics</h2>
 <h4>Total Games Played: @gamesPlayed</h4>
 <h4>Games Ended With a Win: @wonGames (@(winPrecen)%)</h4>
+<h4>Games Ended With a Tie: @(gamesPlayed-wonGames) (@(100-winPrecen)%)</h4>
 <h4>Games Won By Player X: @xWins (@(xWinsPrecen)%)</h4>
 <h4>Games Won By Player O: @(wonGames - xWins) (@(oWinsPrecen)%)</h4>
 <table class="table">
@@ -50,3 +51,4 @@
 	}
     </tbody>
 </table>
+<a asp-action="Index" asp-controller="Home">Back To Main Page</a>
