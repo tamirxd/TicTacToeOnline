@@ -1,0 +1,52 @@
+﻿@model IEnumerable<TicTacToeOnline.Models.GameStatics>
+@using TicTacToeOnline.Models.TicTacToe
+
+@{
+    ViewData["Title"] = "Games Statics";
+    int gamesPlayed = @Model.Count();
+    int wonGames = @Model.Count(stats => !stats.WinnerSymbol.Equals(Symbol.Tie.ToString()));
+    int xWins = Model.Count(stats => stats.WinnerSymbol.Equals(Symbol.X.ToString()));
+    decimal winPrecen = Convert.ToDecimal(wonGames) / Convert.ToDecimal(gamesPlayed) * 100m;
+    decimal xWinsPrecen = Convert.ToDecimal(xWins) / Convert.ToDecimal(wonGames) * 100m;
+    decimal oWinsPrecen = Convert.ToDecimal(wonGames - xWins) / Convert.ToDecimal(wonGames) * 100m;
+}
+<h2>Games Statics</h2>
+<h4>Total Games Played: @gamesPlayed</h4>
+<h4>Games Ended With a Win: @wonGames (@(winPrecen)%)</h4>
+<h4>Games Won By Player X: @xWins (@(xWinsPrecen)%)</h4>
+<h4>Games Won By Player O: @(wonGames - xWins) (@(oWinsPrecen)%)</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.WinnerSymbol)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Moves)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.WinningLine)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+	{
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.WinnerSymbol)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Moves)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.WinningLine)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                </td>
+            </tr>
+	}
+    </tbody>
+</table>

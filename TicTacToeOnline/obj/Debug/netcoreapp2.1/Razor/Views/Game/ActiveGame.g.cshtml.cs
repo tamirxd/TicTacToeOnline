@@ -63,7 +63,7 @@ using TicTacToeOnline.Models;
             WriteLiteral("\r\n");
             EndContext();
             BeginContext(132, 36, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "e9a6d01579154511b37eb184da9b6891", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("script", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "73b075c4c49d4cb19d69e4eee2f31cd7", async() => {
             }
             );
             __Microsoft_AspNetCore_Mvc_Razor_TagHelpers_UrlResolutionTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper>();
@@ -81,7 +81,7 @@ using TicTacToeOnline.Models;
             WriteLiteral("\r\n<div class=\"d-flex justify-content-center\" >\r\n    <div class=\"d-flex flex-column\">\r\n        <h2 id=\"endgameText\" class=\"blinking\"></h2>\r\n        <div>\r\n            ");
             EndContext();
             BeginContext(334, 44, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("partial", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "157018b6807741cfb6f6a75201fcb8d9", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("partial", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "d955c8acd50d409b82236e12ff1c301b", async() => {
             }
             );
             __Microsoft_AspNetCore_Mvc_TagHelpers_PartialTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.TagHelpers.PartialTagHelper>();

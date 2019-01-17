@@ -21,10 +21,9 @@ namespace TicTacToeOnline.Models.TicTacToe
 	public WinningLine WinningLine { get; private set; }
 	public bool IsUpdatedOnDb { get; set; }
 
-	public GameManager(ISession firstPlayer) : this() // Add waiting player to an existing game
+	public GameManager(ISession firstPlayer) : this()
 	{
 	    Players.Add(BitConverter.ToInt32(firstPlayer.Get("GUID")), new Player(Symbol.X, PLAYER_ONE));
-	    //Players[secondPlayer] = new Player(Symbol.O, PLAYER_TWO);
 	}
 
 	public GameManager(int firstGUID, int secondGUID) : this() // Add 2 waiting players to a new game
@@ -88,6 +87,7 @@ namespace TicTacToeOnline.Models.TicTacToe
 	    else if (MarkedSquares == 9)
 	    {
 		playResult = PlayResult.Tie;
+		WinnerSymbol = Symbol.Tie;
 	    }
 
 	    return playResult;
@@ -95,7 +95,6 @@ namespace TicTacToeOnline.Models.TicTacToe
 
 	private bool checkDiagonalWin(int cellRow, int cellCol)
 	{
-	    /** == instead of !=  probably. eter ccondition only if true*/
 	    bool diagonalWin = (GameBoard.Board[1, 1] == CurrentPlayerSymbol) ? true : false;
 	    if (diagonalWin)
 	    {
@@ -125,18 +124,26 @@ namespace TicTacToeOnline.Models.TicTacToe
 		    diagonalWin = diagonalWin && GameBoard.Board[cellRow, cellCol] == CurrentPlayerSymbol &&
 			GameBoard.Board[0, GameBoard.BOARD_COLS - 1] == CurrentPlayerSymbol;
 		}
+		else
+		{
+		    diagonalWin = false;
+		}
 	    }
 	    else if (cellCol == GameBoard.BOARD_COLS - 1)
 	    {
 		if (cellRow == 0)
 		{
-		    diagonalWin = diagonalWin && GameBoard.Board[cellRow , cellCol ] == CurrentPlayerSymbol &&
+		    diagonalWin = diagonalWin && GameBoard.Board[cellRow, cellCol] == CurrentPlayerSymbol &&
 					    GameBoard.Board[GameBoard.BOARD_ROWS - 1, 0] == CurrentPlayerSymbol;
 		}
 		else if (cellRow == GameBoard.BOARD_ROWS - 1)
 		{
 		    diagonalWin = diagonalWin && GameBoard.Board[cellRow, cellCol] == CurrentPlayerSymbol &&
 					    GameBoard.Board[0, 0] == CurrentPlayerSymbol;
+		}
+		else
+		{
+		    diagonalWin = false;
 		}
 	    }
 	    else
@@ -195,17 +202,12 @@ namespace TicTacToeOnline.Models.TicTacToe
 	    if (WinnerSymbol != Symbol.None && !IsUpdatedOnDb)
 	    {
 		IsUpdatedOnDb = true;
-		GameStatics statics = new GameStatics();
-		statics.Moves = MarkedSquares;
-		statics.WinningLine = WinningLine.ToString();
-		statics.WinnerSymbol = WinnerSymbol.ToString();
-		//return new GameStatics
-		//{
-		//    Moves = MarkedSquares,
-		//    WinningLine = WinningLine.ToString(),
-		//    WinnerSymbol = WinnerSymbol.ToString()
-		//};
-		return statics;
+		return new GameStatics
+		{
+		    Moves = MarkedSquares,
+		    WinningLine = WinningLine.ToString(),
+		    WinnerSymbol = WinnerSymbol.ToString()
+		};
 	    }
 
 	    return null;

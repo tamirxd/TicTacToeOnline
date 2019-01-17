@@ -1,0 +1,33 @@
+﻿@model TicTacToeOnline.Models.GameStatics
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<div>
+    <h4>Statics</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.WinnerSymbol)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.WinnerSymbol)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Moves)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Moves)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.WinningLine)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.WinningLine)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
