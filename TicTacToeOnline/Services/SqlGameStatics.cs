@@ -19,7 +19,6 @@ namespace TicTacToeOnline.Services
 	public void Add(GameStatics gameStatics)
 	{
 	    context.Games.Add(gameStatics);
-	    context.SaveChanges();
 	}
 
 	public async Task SaveAsync()

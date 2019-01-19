@@ -235,7 +235,7 @@ using TicTacToeOnline.Models.TicTacToe;
             WriteLiteral("\r\n                </td>\r\n                <td>\r\n                    ");
             EndContext();
             BeginContext(1845, 59, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "b3515ad37f684dd2aadbc7a2be284ff8", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "9865dbf6a5304ce5b95fd8db448adb30", async() => {
                 BeginContext(1893, 7, true);
                 WriteLiteral("Details");
                 EndContext();
@@ -278,7 +278,7 @@ using TicTacToeOnline.Models.TicTacToe;
             WriteLiteral("    </tbody>\r\n</table>\r\n");
             EndContext();
             BeginContext(1976, 65, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "e1f7a62197134e219d147783dd4a9c35", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "9db7b8431855463c870ab1d63243294c", async() => {
                 BeginContext(2020, 17, true);
                 WriteLiteral("Back To Main Page");
                 EndContext();

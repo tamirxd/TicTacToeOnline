@@ -2,6 +2,7 @@
 @model TicTacToeOnline.ViewModels.GamePartialViewModel;
 
 <section>
+
     <table>
         @{
 	    for (int i = 0; i < 3; i++)
@@ -9,8 +10,8 @@
                 <tr>
                     @{ for (int j = 0; j < 3; j++)
 			{
-                            <td width="50" height="=50">
-                                <button id="@(i*3+j)" class="btn btn-outline-secondary btn-game"></button>
+                            <td width="100" height="100" align="center">
+                                <button height="100" style="width:100%;height:100%" id="@(i*3+j)" class="btn btn-outline-secondary btn-game"></button>
                             </td>
 			}
                     }
@@ -18,4 +19,5 @@
 	    }
         }
     </table>
+    <div id="msg-box" class="text-sm-center mt-3"></div>
 </section>

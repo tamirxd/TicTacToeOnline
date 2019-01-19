@@ -37,6 +37,15 @@ function setStartingValues(data) {
     mySymbol = data.playerSymbol;
     currentPlayer = data.firstPlayerSymbol;
     disableRemainingSquares();
+    displayWaitingMessage();
+}
+
+function displayWaitingMessage() {
+    var msg = document.createElement('p');
+    msg.id = "wait-msg";
+    msg.innerHTML = "Waiting for an opponent";
+    msg.style.color = "grey";
+    document.getElementById("msg-box").appendChild(msg);
 }
 
 function toggleSquares() {
@@ -89,6 +98,8 @@ function postMarkActions(data) {
     disableRemainingSquares();
     if (data.winner === "None") {
 	checkTurnInterval = setInterval(function () { checkTurn(); }, 2000);
+	removeElement("my-turn-msg");
+	displayOpponentTurnMsg();
     }
 }
 
@@ -113,6 +124,7 @@ function checkForEndGame(isWinner) {
 }
 
 function endgameActions(isWinner) {
+    clearMsgBox();
     if (isWinner === mySymbol) {
 	winnerActions();
     } else if (isWinner === "Tie") {
@@ -170,48 +182,24 @@ function redirectToHomepage() {
 }
 
 function endgameMessage(type) {
+    var msg = document.createElement('p');
+
     if (type === "Win") {
-	blinkMessage("Congrats! You are the winner! FeelsGoodMan");
+	msg.style.color = "green";
+	msg.innerHTML = "Congrats! You are the winner! FeelsGoodMan";
     } else if (type === "Lose") {
-	blinkMessage("You lost! FeelsBadMan");
+	msg.style.color = "red";
+	msg.innerHTML = "You lost! FeelsBadMan";
     } else {
-	blinkMessage("An amazing tie! FeelsWierdMan");
-    }
-}
-
-//function blinkMessage(text) {
-//	adjustEndgameDiv();
-//	var blinkText = $(".blinking");
-//	$(".blinking").textContent = text;
-//	setInterval(function () {
-//	    blinkText.toggleClass("blink");
-//	}, 1000);
-//}
-
-function blinkMessage(text) {
-    $(".blinking").innerHTML = text;
-    function blinker() {
-	$('.blinking').fadeOut(500);
-	$('.blinking').fadeIn(500);
+	msg.style.color = "yellow";
+	msg.innerHTML = "An amazing tie! FeelsWierdMan";
     }
 
-    setInterval(blinker, 1000);
-}
-
-function adjustEndgameDiv() {
-    var windowWidth = $(window).width();
-    var windowHeight = $(window).height();
-    var endgameDiv = document.getElementById("endgameText");
-    var divW = $(endgameDiv).width();
-    var divH = $(endgameDiv).height();
-
-    endgameDiv.style.position = "absolute";
-    endgameDiv.style.top = (windowHeight / 2) - (divH / 2) + "px";
-    endgameDiv.style.left = (windowWidth / 2) - (divW / 2) + "px";
+    document.getElementById("msg-box").appendChild(msg);
 }
 
 function errorFunc(errordata) {
-    alert("data: ", errordata);
+    alert(errordata, errordata);
 }
 
 function checkTurn() {
@@ -237,6 +225,8 @@ function checkForNextTurn(data) {
 	clearInterval(checkTurnInterval);
 	isBoardUpdated = true;
 	togglePlayers(data.lastMarkedSymbol);
+	removeElement("opponent-turn-msg");
+	displayMyTurnMsg();
     }
 
     if (checkForEndGame(data.winner)) {
@@ -253,10 +243,6 @@ function togglePlayers(symbol) {
 	    currentPlayer = "X";
 	}
     }
-
-    //   if (currentPlayer === mySymbol) {
-    //clearInterval(checkTurnInterval);
-    //   }
 }
 
 function checkIfGameStarted() {
@@ -278,11 +264,38 @@ function updateStartValue(data) {
     if (data.gameStarted) {
 	clearInterval(gameStartedInterval);
 	if (currentPlayer !== mySymbol) {
+	    displayOpponentTurnMsg();
 	    checkTurnInterval = setInterval(checkTurn, 2000);
 	} else {
+	    displayMyTurnMsg();
 	    enableRemainingSquares();
 	}
+	removeElement("wait-msg");
     }
 }
 
-/* לשים טקטסט מתחת לכל ה DIV*/
+function displayOpponentTurnMsg() {
+    var msg = document.createElement('p');
+    msg.id = "opponent-turn-msg";
+    msg.innerHTML = "This is your opponent's turn";
+    msg.style.color = "red";
+    document.getElementById("msg-box").appendChild(msg);
+}
+
+function displayMyTurnMsg() {
+    var msg = document.createElement('p');
+    msg.id = "my-turn-msg";
+    msg.innerHTML = "This is your turn";
+    msg.style.color = "green";
+    document.getElementById("msg-box").appendChild(msg);
+}
+
+
+function removeElement(id) {
+    var elem = document.getElementById(id);
+    return elem.parentNode.removeChild(elem);
+}
+
+function clearMsgBox() {
+    $('#msg-box').empty();
+}
